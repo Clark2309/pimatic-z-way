@@ -32,6 +32,10 @@ module.exports = (env) ->
         configDef: deviceConfigDef.ZWayDimmer,
         createCallback: (config) => new ZWayDimmer(config)
       })
+      @framework.deviceManager.registerDeviceClass("ZWayThermostat", {
+        configDef: deviceConfigDef.ZWayThermostat,
+        createCallback: (config) => new ZWayThermostat(config)
+      })
       @framework.deviceManager.registerDeviceClass("ZWayPowerSensor", {
         configDef: deviceConfigDef.ZWayPowerSensor,
         createCallback: (config) => new ZWayPowerSensor(config)
@@ -143,6 +147,39 @@ module.exports = (env) ->
         return @_dimlevel
       )
 
+  class ZWayThermostat extends env.devices.HeatingThermostat
+    temperature: null
+
+    constructor: (@config) ->
+      @id = @config.id
+      @name = @config.name
+      @interval = @config.interval
+      @virtualDeviceId = @config.virtualDeviceId
+
+      @attributes = {}
+      sensor = "temperature"
+      @attributes[sensor] = {}
+      @attributes[sensor].description = "Current Thermostat Temperature"
+      @attributes[sensor].type = "number"
+
+      getter = ( =>
+        return plugin.getDeviceDetails(@virtualDeviceId).then( (json) =>
+          val = json.data.metrics.level
+          unit = json.data.metrics.scaleTitle
+          @attributes[sensor].unit = unit
+          return val
+        )
+      )
+
+      @_createGetter(sensor, getter)
+      setInterval( ( =>
+        getter().then( (value) =>
+          @emit sensor, value
+        ).catch( (error) =>
+          env.logger.error("error updating sensor value for #{sensor}", error.message)
+        )
+      ), @config.interval * 1000)
+      super()
 
   class ZWayPowerSensor extends env.devices.Sensor
 
