@@ -167,13 +167,12 @@ module.exports = (env) ->
     constructor: (@config, lastState) ->
       @id = @config.id
       @name = @config.name
-      @interval = @config.interval
       @virtualDeviceId = @config.virtualDeviceId
 
       @attributes = {}
       sensor = "temperature"
       @attributes[sensor] = {}
-      @attributes[sensor].description = "Current Thermostat Temperature"
+      @attributes[sensor].description = "Current Room Temperature"
       @attributes[sensor].type = "number"
 
       getter = ( =>
@@ -193,6 +192,7 @@ module.exports = (env) ->
           env.logger.error("error updating sensor value for #{sensor}", error.message)
         )
       ), @config.interval * 1000)
+
       super()
 
   class ZWayPowerSensor extends env.devices.Sensor
