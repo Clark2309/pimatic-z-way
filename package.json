@@ -1,5 +1,4 @@
-{
-  "name": "pimatic-z-way",
+{ "name": "pimatic-z-way",
   "description": "Plugin for controlling devices using Z-Way (z-wave.me)",
   "author": "Mathias Nestler <m@mathiasnestler.de> (http://mne.io)",
   "main": "z-way",
@@ -27,4 +26,3 @@
     "node": ">0.8.x",
     "npm": ">1.1.x"
   }
-}
