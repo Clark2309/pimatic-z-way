@@ -53,6 +53,18 @@ module.exports = (env) ->
         createCallback: (config) => new ZWayMotionSensor(config)
       })
 
+      #CommandClasses
+      ccBasicId                   = 32
+      ccThermostatSetPointId      = 67
+      ccClimateControlScheduleId  = 70
+      ccManufacturerSpecificId    = 114
+      ccProtectionId              = 117
+      ccBatteryId                 = 128
+      ccClockId                   = 129
+      ccWakeupId                  = 132
+      ccVersionId                 = 134
+      ccMultiCmdId                = 143 
+
     sendCommand: (virtualDeviceId, command) ->
       address = "http://" + @config.hostname + ":8083/ZAutomation/api/v1/devices/" + virtualDeviceId + "/command/" + command
       env.logger.debug("sending command " + address)
@@ -63,10 +75,14 @@ module.exports = (env) ->
       env.logger.debug("fetching device details " + address)
       return rp(address).then(JSON.parse)
 
+    getAPIData: (timeStamp) ->
+      address = "http://" + @config.hostname + ":8083/ZWaveAPI/Data/" + timeStamp
+      env.logger.debug("fetching API data " + address)
+      return rp(address).then(JSON.parse)
+
     sleep: (ms) ->
       start = new Date().getTime()
       continue while new Date().getTime() - start < ms
-
 
   class ZWaySwitch extends env.devices.PowerSwitch
 
@@ -112,7 +128,6 @@ module.exports = (env) ->
         return @_state
       )
 
-
   class ZWayDimmer extends env.devices.DimmerActuator
 
     constructor: (@config) ->
@@ -147,10 +162,9 @@ module.exports = (env) ->
         return @_dimlevel
       )
 
-  class ZWayThermostat extends env.devices.HeatingThermostat
-    temperature: null
+  class ZWayThermostat extends env.devices.Device
 
-    constructor: (@config) ->
+    constructor: (@config, lastState) ->
       @id = @config.id
       @name = @config.name
       @virtualDeviceId = @config.virtualDeviceId
