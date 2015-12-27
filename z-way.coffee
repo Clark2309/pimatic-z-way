@@ -32,10 +32,6 @@ module.exports = (env) ->
         configDef: deviceConfigDef.ZWayDimmer,
         createCallback: (config) => new ZWayDimmer(config)
       })
-      @framework.deviceManager.registerDeviceClass("ZWayThermostat", {
-        configDef: deviceConfigDef.ZWayThermostat,
-        createCallback: (config) => new ZWayThermostat(config)
-      })
       @framework.deviceManager.registerDeviceClass("ZWayPowerSensor", {
         configDef: deviceConfigDef.ZWayPowerSensor,
         createCallback: (config) => new ZWayPowerSensor(config)
@@ -53,18 +49,6 @@ module.exports = (env) ->
         createCallback: (config) => new ZWayMotionSensor(config)
       })
 
-      #CommandClasses
-      ccBasicId                   = 32
-      ccThermostatSetPointId      = 67
-      ccClimateControlScheduleId  = 70
-      ccManufacturerSpecificId    = 114
-      ccProtectionId              = 117
-      ccBatteryId                 = 128
-      ccClockId                   = 129
-      ccWakeupId                  = 132
-      ccVersionId                 = 134
-      ccMultiCmdId                = 143 
-
     sendCommand: (virtualDeviceId, command) ->
       address = "http://" + @config.hostname + ":8083/ZAutomation/api/v1/devices/" + virtualDeviceId + "/command/" + command
       env.logger.debug("sending command " + address)
@@ -75,14 +59,10 @@ module.exports = (env) ->
       env.logger.debug("fetching device details " + address)
       return rp(address).then(JSON.parse)
 
-    getAPIData: (timeStamp) ->
-      address = "http://" + @config.hostname + ":8083/ZWaveAPI/Data/" + timeStamp
-      env.logger.debug("fetching API data " + address)
-      return rp(address).then(JSON.parse)
-
     sleep: (ms) ->
       start = new Date().getTime()
       continue while new Date().getTime() - start < ms
+
 
   class ZWaySwitch extends env.devices.PowerSwitch
 
@@ -128,6 +108,7 @@ module.exports = (env) ->
         return @_state
       )
 
+
   class ZWayDimmer extends env.devices.DimmerActuator
 
     constructor: (@config) ->
@@ -162,38 +143,6 @@ module.exports = (env) ->
         return @_dimlevel
       )
 
-  class ZWayThermostat extends env.devices.Device
-
-    constructor: (@config, lastState) ->
-      @id = @config.id
-      @name = @config.name
-      @virtualDeviceId = @config.virtualDeviceId
-
-      @attributes = {}
-      sensor = "temperature"
-      @attributes[sensor] = {}
-      @attributes[sensor].description = "Current Room Temperature"
-      @attributes[sensor].type = "number"
-
-      getter = ( =>
-        return plugin.getDeviceDetails(@virtualDeviceId).then( (json) =>
-          val = json.data.metrics.level
-          unit = json.data.metrics.scaleTitle
-          @attributes[sensor].unit = unit
-          return val
-        )
-      )
-
-      @_createGetter(sensor, getter)
-      setInterval( ( =>
-        getter().then( (value) =>
-          @emit sensor, value
-        ).catch( (error) =>
-          env.logger.error("error updating sensor value for #{sensor}", error.message)
-        )
-      ), @config.interval * 1000)
-
-      super()
 
   class ZWayPowerSensor extends env.devices.Sensor
 

@@ -30,13 +30,6 @@ Set the `class` attribute to one of the following classes. For example:
       "interval": 0
     },
     {
-      "class": "ZWayThermostat",
-      "id": "danfoss_thermostat",
-      "name": "Thermostat",
-      "virtualDeviceId": "ZWayVDev_zway_2-0-48",
-      "interval": 0
-    },
-    {
       "class": "ZWayPowerSensor",
       "id": "fibaro_power_sensor",
       "name": "Power Sensor",
